@@ -3,10 +3,10 @@ import { Client, Databases } from "appwrite";
 const client = new Client();
 
 client
-  .setEndpoint("https://cloud.appwrite.io/v1") // ✅ use this for Appwrite Cloud
-  .setProject("68baa21c00337c9c583b"); // 🔑 replace with your Project ID
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string)
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID as string);
 
 export const databases = new Databases(client);
 
-export const DATABASE_ID = "68baa24d003953465935";     // movies_db
-export const COLLECTION_ID = "movies"; // movies
+export const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string;
+export const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID as string;
