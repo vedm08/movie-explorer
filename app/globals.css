@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Apply global body styles */
+  body {
+    @apply bg-black text-white;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    /* Optional smooth font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Set default styles for scrollbars */
+  /* You can customize this or hide scrollbars if you prefer */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1a1a1a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* Tailwind slate-600 */
+    border-radius: 4px;
+  }
+
+  /* Optional: global styles for links */
+  a {
+    @apply text-blue-400 hover:text-blue-600 transition-colors;
+    text-decoration: none;
+  }
+}
