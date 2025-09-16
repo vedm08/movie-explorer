@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { databases, DATABASE_ID, COLLECTION_ID } from "@/lib/appwrite";
-import { Models, Query } from "appwrite";
+import {
+  databases,
+  DATABASE_ID,
+  COLLECTION_ID,
+  MovieDocument,
+} from "@/lib/appwrite";
+import { Query } from "appwrite";
 import MovieCard from "./MovieCard";
 import SearchBar from "./SearchBar";
 
-// ✅ Movie extends Appwrite system fields
-interface Movie extends Models.Document {
-  title: string;
-  director: string;
-  release_year: number;
-}
-
 export default function MovieList() {
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<MovieDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(0);
@@ -32,24 +30,26 @@ export default function MovieList() {
   const fetchMovies = async () => {
     setLoading(true);
     try {
-      let docs: Movie[] = [];
+      let docs: MovieDocument[] = [];
 
       if (searchQuery.trim() !== "") {
+        // Search both title and director
         const [titleRes, directorRes] = await Promise.all([
-          databases.listDocuments<Movie>(DATABASE_ID, COLLECTION_ID, [
-            Query.contains("title", [searchQuery]),
+          databases.listDocuments<MovieDocument>(DATABASE_ID, COLLECTION_ID, [
+            Query.contains("title", searchQuery),
           ]),
-          databases.listDocuments<Movie>(DATABASE_ID, COLLECTION_ID, [
-            Query.contains("director", [searchQuery]),
+          databases.listDocuments<MovieDocument>(DATABASE_ID, COLLECTION_ID, [
+            Query.contains("director", searchQuery),
           ]),
         ]);
 
-        const map = new Map<string, Movie>();
+        const map = new Map<string, MovieDocument>();
         [...titleRes.documents, ...directorRes.documents].forEach((doc) =>
           map.set(doc.$id, doc)
         );
         docs = Array.from(map.values());
 
+        // Sort locally
         docs.sort((a, b) => {
           if (sortField === "title") {
             return sortOrder === "ASC"
@@ -62,9 +62,11 @@ export default function MovieList() {
           }
         });
 
+        // Apply pagination
         const start = page * pageSize;
         docs = docs.slice(start, start + pageSize);
       } else {
+        // Normal query with pagination + sorting
         const queries: any[] = [
           Query.limit(pageSize),
           Query.offset(page * pageSize),
@@ -74,7 +76,7 @@ export default function MovieList() {
         } else {
           queries.push(Query.orderDesc(sortField));
         }
-        const res = await databases.listDocuments<Movie>(
+        const res = await databases.listDocuments<MovieDocument>(
           DATABASE_ID,
           COLLECTION_ID,
           queries
@@ -172,6 +174,7 @@ export default function MovieList() {
         />
       </div>
 
+      {/* Sorting */}
       <div className="flex justify-between items-center mb-8 bg-gray-900 p-4 rounded-lg shadow-md">
         <div className="flex gap-3 items-center">
           <label className="text-sm font-medium text-gray-300">Sort by:</label>
@@ -196,6 +199,7 @@ export default function MovieList() {
         </div>
       </div>
 
+      {/* Featured slider */}
       <h2 className="text-xl font-bold mb-4 text-white tracking-wide">
         Featured Movies
       </h2>
@@ -219,6 +223,7 @@ export default function MovieList() {
         ))}
       </div>
 
+      {/* All movies */}
       <h2 className="text-xl font-bold mt-10 mb-6 text-white tracking-wide">
         All Movies
       </h2>
@@ -238,6 +243,7 @@ export default function MovieList() {
         ))}
       </div>
 
+      {/* Pagination */}
       <div className="flex justify-between items-center mt-12">
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
