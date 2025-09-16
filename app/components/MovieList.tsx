@@ -6,8 +6,8 @@ import { Models, Query } from "appwrite";
 import MovieCard from "./MovieCard";
 import SearchBar from "./SearchBar";
 
-interface Movie {
-  $id: string;
+// ✅ Movie extends Appwrite system fields
+interface Movie extends Models.Document {
   title: string;
   director: string;
   release_year: number;
@@ -32,36 +32,33 @@ export default function MovieList() {
   const fetchMovies = async () => {
     setLoading(true);
     try {
-      let docs: Models.Document[] = [];
+      let docs: Movie[] = [];
 
       if (searchQuery.trim() !== "") {
         const [titleRes, directorRes] = await Promise.all([
-          databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+          databases.listDocuments<Movie>(DATABASE_ID, COLLECTION_ID, [
             Query.contains("title", [searchQuery]),
           ]),
-          databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+          databases.listDocuments<Movie>(DATABASE_ID, COLLECTION_ID, [
             Query.contains("director", [searchQuery]),
           ]),
         ]);
 
-        const map = new Map<string, Models.Document>();
+        const map = new Map<string, Movie>();
         [...titleRes.documents, ...directorRes.documents].forEach((doc) =>
           map.set(doc.$id, doc)
         );
         docs = Array.from(map.values());
 
         docs.sort((a, b) => {
-          const aMovie = a as unknown as Movie;
-          const bMovie = b as unknown as Movie;
-
           if (sortField === "title") {
             return sortOrder === "ASC"
-              ? aMovie.title.localeCompare(bMovie.title)
-              : bMovie.title.localeCompare(aMovie.title);
+              ? a.title.localeCompare(b.title)
+              : b.title.localeCompare(a.title);
           } else {
             return sortOrder === "ASC"
-              ? aMovie.release_year - bMovie.release_year
-              : bMovie.release_year - aMovie.release_year;
+              ? a.release_year - b.release_year
+              : b.release_year - a.release_year;
           }
         });
 
@@ -77,7 +74,7 @@ export default function MovieList() {
         } else {
           queries.push(Query.orderDesc(sortField));
         }
-        const res = await databases.listDocuments(
+        const res = await databases.listDocuments<Movie>(
           DATABASE_ID,
           COLLECTION_ID,
           queries
@@ -85,17 +82,7 @@ export default function MovieList() {
         docs = res.documents;
       }
 
-      setMovies(
-        docs.map((doc) => {
-          const movie = doc as unknown as Movie;
-          return {
-            $id: movie.$id,
-            title: movie.title,
-            director: movie.director,
-            release_year: movie.release_year,
-          };
-        })
-      );
+      setMovies(docs);
     } catch (err) {
       console.error("Failed to fetch movies:", err);
     } finally {
@@ -123,6 +110,7 @@ export default function MovieList() {
 
   useEffect(() => {
     fetchMovies();
+    // eslint-disable-next-line
   }, [page, sortField, sortOrder, searchQuery]);
 
   useEffect(() => {
@@ -258,7 +246,9 @@ export default function MovieList() {
         >
           Previous
         </button>
-        <span className="text-sm font-medium text-gray-300">Page {page + 1}</span>
+        <span className="text-sm font-medium text-gray-300">
+          Page {page + 1}
+        </span>
         <button
           onClick={() => setPage((prev) => prev + 1)}
           className="px-6 py-2 bg-neutral-800 text-white rounded-full shadow hover:bg-neutral-700 transition"
