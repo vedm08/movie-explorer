@@ -17,21 +17,16 @@ export default function MovieList() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Pagination
   const [page, setPage] = useState(0);
   const pageSize = 9;
 
-  // Sorting
   const [sortField, setSortField] = useState<"title" | "release_year">("title");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 
-  // Search
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Slider ref
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Editing state tracking movie being edited
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchMovies = async () => {
@@ -40,7 +35,6 @@ export default function MovieList() {
       let docs: Models.Document[] = [];
 
       if (searchQuery.trim() !== "") {
-        // Use partial match for search using Query.contains
         const [titleRes, directorRes] = await Promise.all([
           databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
             Query.contains("title", [searchQuery]),
@@ -54,7 +48,6 @@ export default function MovieList() {
         [...titleRes.documents, ...directorRes.documents].forEach((doc) =>
           map.set(doc.$id, doc)
         );
-
         docs = Array.from(map.values());
 
         docs.sort((a, b) => {
@@ -110,7 +103,6 @@ export default function MovieList() {
     }
   };
 
-  // Update movie document in Appwrite database
   const updateMovieInDB = async (
     movieId: string,
     updatedData: { title: string; director: string; release_year: number }
@@ -131,10 +123,8 @@ export default function MovieList() {
 
   useEffect(() => {
     fetchMovies();
-    // eslint-disable-next-line
   }, [page, sortField, sortOrder, searchQuery]);
 
-  // Autoplay slider effect
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -160,7 +150,6 @@ export default function MovieList() {
     return true;
   };
 
-  // Save updates locally and in DB
   const handleSave = async (
     movieId: string,
     updated: { title: string; director: string; release_year: number }
