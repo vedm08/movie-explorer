@@ -40,12 +40,13 @@ export default function MovieList() {
       let docs: Models.Document[] = [];
 
       if (searchQuery.trim() !== "") {
+        // Use partial match for search using Query.contains
         const [titleRes, directorRes] = await Promise.all([
           databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-            Query.equal("title", searchQuery),
+            Query.contains("title", [searchQuery]),
           ]),
           databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-            Query.equal("director", searchQuery),
+            Query.contains("director", [searchQuery]),
           ]),
         ]);
 
@@ -158,13 +159,10 @@ export default function MovieList() {
     movieId: string,
     updated: { title: string; director: string; release_year: number }
   ) => {
-    // Optimistically update UI
     setMovies((prev) =>
       prev.map((m) => (m.$id === movieId ? { ...m, ...updated } : m))
     );
     setEditingId(null);
-
-    // Update database
     await updateMovieInDB(movieId, updated);
   };
 

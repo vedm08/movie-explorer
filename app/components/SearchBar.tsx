@@ -10,12 +10,12 @@ interface SearchBarProps {
 export default function SearchBar({ onSearch }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
-  /*Live search on input change
+   /*// Live search: call onSearch on every input change
   useEffect(() => {
     onSearch(query.trim());
-  }, [query, onSearch]);
-*/
-  // Handle form submission without page reload
+  }, [query, onSearch]);*/
+
+  // Handle form submission (doesn't reload page; keeps app accessible)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(query.trim());
