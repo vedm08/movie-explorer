@@ -58,14 +58,17 @@ export default function MovieList() {
         docs = Array.from(map.values());
 
         docs.sort((a, b) => {
+          const aMovie = a as unknown as Movie;
+          const bMovie = b as unknown as Movie;
+
           if (sortField === "title") {
             return sortOrder === "ASC"
-              ? a.title.localeCompare(b.title)
-              : b.title.localeCompare(a.title);
+              ? aMovie.title.localeCompare(bMovie.title)
+              : bMovie.title.localeCompare(aMovie.title);
           } else {
             return sortOrder === "ASC"
-              ? a.release_year - b.release_year
-              : b.release_year - a.release_year;
+              ? aMovie.release_year - bMovie.release_year
+              : bMovie.release_year - aMovie.release_year;
           }
         });
 
@@ -90,12 +93,15 @@ export default function MovieList() {
       }
 
       setMovies(
-        docs.map((doc) => ({
-          $id: doc.$id,
-          title: doc.title,
-          director: doc.director,
-          release_year: doc.release_year,
-        }))
+        docs.map((doc) => {
+          const movie = doc as unknown as Movie;
+          return {
+            $id: movie.$id,
+            title: movie.title,
+            director: movie.director,
+            release_year: movie.release_year,
+          };
+        })
       );
     } catch (err) {
       console.error("Failed to fetch movies:", err);
